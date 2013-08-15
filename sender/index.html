@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html data-cast-api-enabled="true">
+	<head>
+		<title>Webview</title>
+	</head>
+
+	<body>
+		<form id="form">
+			<input type="text" id="url" value="www.google.com"/>
+			<input type="submit" />
+		</form>
+
+		<script src="jquery.js"></script>
+		<script>
+			var APP_ID = "46590e61-c00c-47c7-a672-a50b7cd37cf6_1";
+			var APP_NAMESPACE = "HEB";
+
+			var cast_api;
+			var receiver;
+			var cv_activity;
+
+			// Wait for API to post message to us
+			window.addEventListener("message", function(event){
+				// We don't want to re-inject api multiple times
+				if(!cast_api){
+					if(	event.source == window && event.data && event.data.source == "CastApi" && event.data.event == "Hello"){
+						initializeApi();
+					}
+				}
+			});
+			
+			// Initialize the api
+			function initializeApi()
+			{
+				cast_api = new cast.Api();
+				cast_api.addReceiverListener(APP_ID, onReceiverList);
+			}
+
+			// Select our receiver
+			function onReceiverList(list)
+			{
+				if(list.length > 0){
+					receiver = list[0];	// list[0] = {id: "str", name: "str", ipAddress:"string", isTabProjected: null}
+				}
+			}
+
+			$("#form").submit(function(e){
+				e.preventDefault();
+				var url = $("#url").val();
+				doLaunch(url);
+			});
+
+			// Launch our application
+			function doLaunch(url){
+				var request = new cast.LaunchRequest(APP_ID, receiver);
+				// The ideal method would be to read these parameters
+				// on the receiver side. However, it doesn't look like this
+				// is working (i.e. receiver not getting query string)
+				// Therefore we load the default app then send a message immediately
+				// to change urls
+				//
+				// request.parameters = "url=" + url;
+				cast_api.launch(request, function(activity){
+					if(activity.status == "running"){
+						cast_api.sendMessage(activity.activityId, APP_NAMESPACE, {"url": url});
+					}
+				});
+				
+			}
+
+		</script>
+	</body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="https://www.gstatic.com/cast/js/receiver/1.0/cast_receiver.js"></script>
+</head>
+
+<body>
+	<script>
+		var APP_ID = "46590e61-c00c-47c7-a672-a50b7cd37cf6_1";
+		var APP_NAMESPACE = "HEB";
+
+		var receiver = new cast.receiver.Receiver(APP_ID, [APP_NAMESPACE], "", 5);
+		var channelHandler = new cast.receiver.ChannelHandler(APP_NAMESPACE);
+		channelHandler.addChannelFactory(receiver.createChannelFactory(APP_NAMESPACE));
+
+		receiver.start();
+
+		window.addEventListener('load', function(){
+			// If request.parameters was working then we would simply
+			// need to read the query parameters and redirect to
+			// that url.
+			// window.location = location.search.split("=")[1];
+			channelHandler.addEventListener(cast.receiver.Channel.EventType.MESSAGE, onMessage.bind(this));
+		});
+
+		//listen for messages from chromecast-sender
+		
+		function onMessage(event){
+			window.location = event.message.url;
+		}
+
+	</script>
+</body>
+</html>
